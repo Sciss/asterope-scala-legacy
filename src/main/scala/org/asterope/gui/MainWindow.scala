@@ -4,76 +4,69 @@ import net.infonode.docking.util._
 import net.infonode.docking.theme.ShapedGradientDockingTheme
 import net.infonode.util.Direction
 import org.asterope.util._
-import collection.mutable.WeakHashMap
 import net.infonode.docking._
 import java.awt.{CardLayout, BorderLayout, Component, Dimension}
 import javax.swing._
+import scala.collection.mutable
 
-/**
- * Main window with frame docks
- */
-class MainWindow (val resmap:ResourceMap){
+/** Main window with frame docks */
+class MainWindow(val resmap: ResourceMap) {
 
-  val menu:JMenuBar = new JMenuBar
+  val menu: JMenuBar = new JMenuBar
 
-
-  lazy val mainFrame = new JFrame(){
+  lazy val mainFrame = new JFrame() {
     // ImageJ and other libraries are leaving windows behind
     // DISPOSE_ON_CLOSE does not really work
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
-    val c = new JPanel();
+    val c = new JPanel()
     c.setLayout(new BorderLayout)
     c.add(rootWindow, BorderLayout.CENTER)
-    c.add(statusBar, BorderLayout.SOUTH)
+    c.add(statusBar , BorderLayout.SOUTH )
     setContentPane(c)
     setPreferredSize(new Dimension(1000, 600))
     setName("mainWindow")
-    if(menu!=null)
+    if (menu != null)
       setJMenuBar(menu)
   }
 
   protected lazy val viewMap = new StringViewMap()
 
-  protected lazy val rootWindow = {
+  protected lazy val rootWindow: RootWindow = {
     val r = DockingUtil.createRootWindow(viewMap,true)
     //disable shadows and lot of other stuff. It has to be explicitely enabled
     val sup = new ShapedGradientDockingTheme().getRootWindowProperties
-    sup.getDockingWindowProperties.setCloseEnabled(false)
-    sup.getDockingWindowProperties.setMinimizeEnabled(false)
-    sup.getDockingWindowProperties.setMaximizeEnabled(false)
-    sup.getDockingWindowProperties.setUndockEnabled(false)
-    sup.getDockingWindowProperties.setDockEnabled(false)
-    sup.getDockingWindowProperties.setDragEnabled(false)
-    sup.getDockingWindowProperties.setRestoreEnabled(false)
-    sup.getDockingWindowProperties.setUndockOnDropEnabled(false)
+    sup.getDockingWindowProperties.setCloseEnabled        (false)
+    sup.getDockingWindowProperties.setMinimizeEnabled     (false)
+    sup.getDockingWindowProperties.setMaximizeEnabled     (false)
+    sup.getDockingWindowProperties.setUndockEnabled       (false)
+    sup.getDockingWindowProperties.setDockEnabled         (false)
+    sup.getDockingWindowProperties.setDragEnabled         (false)
+    sup.getDockingWindowProperties.setRestoreEnabled      (false)
+    sup.getDockingWindowProperties.setUndockOnDropEnabled (false)
     r.getRootWindowProperties.addSuperObject(sup)
     //set basic layout
-    r.setWindow(new SplitWindow(true,0.25f,
-      new SplitWindow(false,0.6f,leftTopTabs,leftBottomTabs),
+    r.setWindow(new SplitWindow(true, 0.25f,
+      new SplitWindow(false, 0.6f, leftTopTabs, leftBottomTabs),
       editorTabs))
-    r.getWindowBar(Direction.DOWN).setEnabled(true);
+    r.getWindowBar(Direction.DOWN).setEnabled(true)
 
     r
   }
 
-  lazy val editorTabs = new TabWindow(){
+  lazy val editorTabs = new TabWindow() {
     getWindowProperties.setMaximizeEnabled(true)
-    getWindowProperties.setRestoreEnabled(true)
+    getWindowProperties.setRestoreEnabled (true)
   }
 
-
-
-  protected lazy val leftTopTabs = new TabWindow(){
-  }
-  protected lazy val leftBottomTabs = new TabWindow(){
-  }
+  protected lazy val leftTopTabs    = new TabWindow()
+  protected lazy val leftBottomTabs = new TabWindow()
 
   protected def bottomBar = rootWindow.getWindowBar(Direction.DOWN)
 
   protected lazy val statusBar = new StatusBar
 
-  def show(){
-    if(menu!=null)
+  def show(): Unit = {
+    if (menu != null)
       resmap.injectComponents(menu)
 
     resmap.injectActionFields(this)
@@ -82,136 +75,119 @@ class MainWindow (val resmap:ResourceMap){
     mainFrame.setVisible(true)
   }
 
-  def showMinimized(){
+  def showMinimized(): Unit = {
     mainFrame.setState(java.awt.Frame.ICONIFIED)
-    show();
+    show()
   }
 
-  def hide(){
+  def hide(): Unit =
     mainFrame.setVisible(false)
-  }
 
-
-  def addEditor(id:String, comp:JComponent):View = {
-    resmap.injectComponents(comp)
+  def addEditor(id: String, comp: JComponent): View = {
+    resmap.injectComponents  (comp)
     resmap.injectActionFields(comp)
     val v = new View(id, null, comp)
-    v.getWindowProperties.setCloseEnabled(true)
+    v.getWindowProperties.setCloseEnabled   (true)
     v.getWindowProperties.setMaximizeEnabled(true)
     viewMap.addView(id, v)
     editorTabs.addTab(v)
     v
   }
 
-  protected def fabSideView(id:String, comp:JComponent):View = {
-    assert(viewMap.getView(id) == null, "View with id '"+id+"' is already present")
+  protected def fabSideView(id: String, comp: JComponent): View = {
+    assert(viewMap.getView(id) == null, "View with id '" + id + "' is already present")
     resmap.injectActionFields(comp)
-    resmap.injectComponents(comp)
+    resmap.injectComponents  (comp)
 
-    val title = resmap.getString(id+".text")
+    val title = resmap.getString(id + ".text")
     val v = new View(title, null, comp)
-    v.getWindowProperties.setCloseEnabled(true)
-    v.getWindowProperties.setMinimizeEnabled(true)
-    v.getWindowProperties.setRestoreEnabled(true)
-    v.getWindowProperties.setDockEnabled(true)
-    v.getWindowProperties.setUndockEnabled(true)
-    v.getWindowProperties.setDragEnabled(true)
+    v.getWindowProperties.setCloseEnabled       (true)
+    v.getWindowProperties.setMinimizeEnabled    (true)
+    v.getWindowProperties.setRestoreEnabled     (true)
+    v.getWindowProperties.setDockEnabled        (true)
+    v.getWindowProperties.setUndockEnabled      (true)
+    v.getWindowProperties.setDragEnabled        (true)
     v.getWindowProperties.setUndockOnDropEnabled(true)
     viewMap.addView(id, v)
 
     v
   }
 
-  def addBottomBarView(id:String, comp:JComponent):View ={
-    val v = fabSideView(id,comp);
+  def addBottomBarView(id: String, comp: JComponent): View = {
+    val v = fabSideView(id, comp)
     bottomBar.addTab(v)
     v
   }
 
-  def addLeftTopView(id:String, comp:JComponent):View = {
-    val v = fabSideView(id,comp)
+  def addLeftTopView(id: String, comp: JComponent): View = {
+    val v = fabSideView(id, comp)
     leftTopTabs.addTab(v)
     v
-
   }
 
-  def addLeftBottomView(id:String, comp:JComponent):View = {
-    val v = fabSideView(id,comp)
+  def addLeftBottomView(id: String, comp: JComponent): View = {
+    val v = fabSideView(id, comp)
     leftBottomTabs.addTab(v)
     v
   }
 
-  def getFocusedEditor = {
+  def getFocusedEditor: Component = {
     val v = editorTabs.getSelectedWindow
-    if(v != null) v.asInstanceOf[View].getComponent
+    if (v != null) v.asInstanceOf[View].getComponent
     else null
   }
 
+  /** A view which contents depends on active editor */
+  abstract class EditorBoundView extends JLayeredPane {
 
-
-
-  /**
-   * An view which contents depends on active editor
-   */
-  abstract class EditorBoundView extends JLayeredPane{
-
-    def editorOpened(editor:Component):JComponent
-    def editorClosed(editor:Component,  subview:JComponent)
+    def editorOpened(editor: Component): JComponent
+    def editorClosed(editor: Component, subview: JComponent): Unit
 
     private val cardLayout = new CardLayout()
 
     setLayout(cardLayout)
-    add(new JPanel(),"empty")
+    add(new JPanel(), "empty")
 
-    private val editor2subview = new WeakHashMap[Component,  (String,JComponent)]
+    private val editor2subview = new mutable.WeakHashMap[Component, (String, JComponent)]
 
-    private def editorChanged(editor:Component){
-      if(editor == null){
-        cardLayout.show(this,"empty")
-        return;
+    private def editorChanged(editor: Component): Unit = {
+      if (editor == null) {
+        cardLayout.show(this, "empty")
+        return
       }
 
-      if(!editor2subview.contains(editor)){
-        val key = math.random.toString
+      if (!editor2subview.contains(editor)) {
+        val key     = math.random.toString
         val subview = editorOpened(editor)
 
-        if(subview!=null){
-          editor2subview.put(editor,(key,subview))
-          add(subview,key)
-        }else{
-          cardLayout.show(this,"empty")
-          return;
+        if (subview != null) {
+          editor2subview.put(editor, (key, subview))
+          add(subview, key)
+        } else {
+          cardLayout.show(this, "empty")
+          return
         }
       }
 
-      cardLayout.show(this,editor2subview(editor)._1)
+      cardLayout.show(this, editor2subview(editor)._1)
       revalidate()
-
     }
 
-    editorTabs.addListener(new DockingWindowAdapter{
-      override def viewFocusChanged(previouslyFocusedView: View, focusedView: View){
-        if(focusedView==null) editorChanged(null)
+    editorTabs.addListener(new DockingWindowAdapter {
+      override def viewFocusChanged(previouslyFocusedView: View, focusedView: View): Unit =
+        if (focusedView == null) editorChanged(null)
         else editorChanged(focusedView.getComponent)
-      }
 
-      override def windowAdded(addedToWindow: DockingWindow, addedWindow: DockingWindow){
+      override def windowAdded(addedToWindow: DockingWindow, addedWindow: DockingWindow): Unit =
         editorChanged(addedWindow.asInstanceOf[View].getComponent)
-      }
 
-      override def windowClosed(window: DockingWindow){
-        val win = window.asInstanceOf[View].getComponent;
-        if(editor2subview.contains(win)){
+      override def windowClosed(window: DockingWindow): Unit = {
+        val win = window.asInstanceOf[View].getComponent
+        if (editor2subview.contains(win)) {
           remove(editor2subview(win)._2)
           editor2subview.remove(win)
         }
       }
-
-
-
-    });
+    })
   }
-
-
-
 }
