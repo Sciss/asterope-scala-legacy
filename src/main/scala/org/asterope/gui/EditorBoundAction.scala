@@ -13,75 +13,68 @@ import java.awt.event.ActionEvent
  * If editor is not opened, action is disabled.
  * Action atributes (enabled, selected) are synchronized with editor.
  */
-class EditorBoundAction(mainWin:MainWindow) extends AbstractAction{
+class EditorBoundAction(mainWin: MainWindow) extends AbstractAction {
   setEnabled(false)
 
-  private var oldEditorAction:Action = null;
+  private var oldEditorAction: Action = null
 
-  private var listeners = Map[Component,Action]()
+  private var listeners = Map[Component, Action]()
 
-  def addActionListener(editor:Component,action:Action){
-    listeners += editor->action
-  }
+  def addActionListener(editor: Component, action: Action): Unit =
+    listeners += editor -> action
 
   /*
    * Code which synchronizes some action properties
    * - when active editor changes, it enables or disables mainWinAction
    * - keeps this 'enabled' and 'selected' properties in sync
    */
-  private object actionListener extends java.beans.PropertyChangeListener{
-
-    def propertyChange(evt: PropertyChangeEvent){
-      if(evt.getPropertyName == Action.SELECTED_KEY || evt.getPropertyName == "enabled")
-        putValue(evt.getPropertyName,evt.getNewValue);
-    }
+  private object actionListener extends java.beans.PropertyChangeListener {
+    def propertyChange(evt: PropertyChangeEvent): Unit =
+      if (evt.getPropertyName == Action.SELECTED_KEY || evt.getPropertyName == "enabled")
+        putValue(evt.getPropertyName, evt.getNewValue)
   }
 
   /** called when active editor changes */
-  private def rehookActionListeners(editor:Component){
-    val newEditorAction:Action = listeners.get(editor).getOrElse(null)
+  private def rehookActionListeners(editor: Component): Unit = {
+    val newEditorAction: Action = listeners.get(editor).getOrElse(null)
 
-    action2ScalaAction(this).enabled = (newEditorAction!=null && newEditorAction.enabled)
-    action2ScalaAction(this).selected = (if(newEditorAction==null) None else newEditorAction.selected)
-    if(oldEditorAction!=null)
+    action2ScalaAction(this).enabled  = newEditorAction != null && newEditorAction.enabled
+    action2ScalaAction(this).selected = if (newEditorAction == null) None else newEditorAction.selected
+
+    if (oldEditorAction != null)
       oldEditorAction.removePropertyChangeListener(actionListener)
-    if(newEditorAction!=null)
+    if (newEditorAction != null)
       newEditorAction.addPropertyChangeListener(actionListener)
-    oldEditorAction = newEditorAction;
+    oldEditorAction = newEditorAction
   }
 
-  mainWin.editorTabs.addListener(new DockingWindowAdapter{
-    override def windowAdded(addedToWindow: DockingWindow, addedWindow: DockingWindow){
-      if(addedWindow.isInstanceOf[View])
-        rehookActionListeners(addedWindow.asInstanceOf[View].getComponent)
-    }
-    override def windowClosed(window: DockingWindow){
+  mainWin.editorTabs.addListener(new DockingWindowAdapter {
+    override def windowAdded(addedToWindow: DockingWindow, addedWindow: DockingWindow): Unit =
+      addedWindow match {
+        case view: View => rehookActionListeners(view.getComponent)
+        case _ =>
+      }
+
+    override def windowClosed(window: DockingWindow): Unit =
       rehookActionListeners(mainWin.getFocusedEditor)
-    }
 
-    override def viewFocusChanged(previouslyFocusedView: View, focusedView: View){
-      if(focusedView!=null)
+    override def viewFocusChanged(previouslyFocusedView: View, focusedView: View): Unit =
+      if (focusedView != null)
         rehookActionListeners(focusedView.getComponent)
-    }
-
   })
 
-  def actionPerformed(e:ActionEvent){
+  def actionPerformed(e: ActionEvent): Unit =
     //forward to editor
-    if(oldEditorAction!=null){
+    if (oldEditorAction != null) {
       oldEditorAction.actionPerformed(e)
-    }else{
+    } else {
       throw new Error("EditorBoundAction should not be called when no editor is active.")
     }
-  }
 
-
-  def editorAction(editor:Component)(block: => Unit):Action = {
-    val action = act{block};
+  def editorAction(editor: Component)(block: => Unit): Action = {
+    val action = act { block }
     //add listener from main window action
-    this.addActionListener(editor,action)
+    this.addActionListener(editor, action)
     action
   }
-
-
 }

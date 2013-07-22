@@ -12,13 +12,13 @@ import org.apache.commons.math.geometry.Vector3D
  * @author T. Alonso Albi - OAN (Spain)
  * @version 1.0
  */
-object AtlasChart{
+object AtlasChart {
   /**
      * This function returns the page number in the Millennium Star Atlas that
      * best shows the location specified.
      *
-     * @param ra Right ascension in radians.
-     * @param dec Declination in radians.
+     * @param ra2 Right ascension in radians.
+     * @param dec2 Declination in radians.
      * @return The appropriate Millenium Atlas page.
      */
     def millenniumAtlas(ra2: Double, dec2: Double): Int = {
@@ -26,28 +26,29 @@ object AtlasChart{
       val ra = ra2 * Angle.R2H
       val dec = dec2 * Angle.R2D
       if (dec >= 87.0)
-        page = (if (ra < 4|| ra > 16) 2 else 1)
+        page = if (ra < 4 || ra > 16) 2 else 1
       else if (dec <= -87.0)
-        page = (if (ra < 4|| ra > 16) 516 else 515)
+        page = if (ra < 4 || ra > 16) 516 else 515
       else {
         val gore: Int = (ra / 8.0).asInstanceOf[Int]
         var zone: Int = ((93.0 - dec) / 6.0).asInstanceOf[Int]
         val remains: Double = math.ceil(ra / 8.0) * 8.0 - ra
         val per_zone = Array(2, 4, 8, 10, 12, 14, 16, 20, 20, 22, 22, 24, 24, 24, 24, 24, 24, 24, 24, 24, 22, 22, 20, 20, 16, 14, 12, 10, 8, 4, 2)
         page = (remains * per_zone(zone).asInstanceOf[Double] / 8.0).asInstanceOf[Int] + 1 + gore * 516
-        while (0 != ({
-          zone -= 1; zone
-        })) page += per_zone(zone)
+        while (0 != {
+          zone -= 1
+          zone
+        }) page += per_zone(zone)
       }
-      return page
+      page
     }
 
   /**
      * This function returns the page number in Sky Atlas 2000 page that best
      * shows the location specified.
      *
-     * @param ra Right ascension in radians.
-     * @param dec Declination in radians.
+     * @param ra2 Right ascension in radians.
+     * @param dec2 Declination in radians.
      * @return The appropriate Sky Atlas 2000 page.
      */
     def skyAtlas2000(ra2: Double, dec2: Double): Int = {
@@ -66,7 +67,7 @@ object AtlasChart{
         page = 1 + (ra / 8.0).toInt
         if (dec < 0.0) page += 23
       }
-      return page
+      page
     }
 
     private val uranometriaDecLimits = Array(-900, -845, -725, -610, -500, -390, -280, -170, -55, 55, 170, 280, 390, 500, 610, 725, 845, 900)
@@ -75,8 +76,8 @@ object AtlasChart{
      * This function returns the page number in Uranometria that best shows the
      * location specified.
      *
-     * @param ra Right ascension in radians.
-     * @param dec Declination in radians.
+     * @param ra2 Right ascension in radians.
+     * @param dec2 Declination in radians.
      * @param fix472 True to swap charts 472 and 473 (needed in original
      *        edition).
      * @return The appropriate Uranometria page.
@@ -89,15 +90,15 @@ object AtlasChart{
 
       divide = 0
       while (uranometriaDecLimits(divide + 1).toDouble < dec * 10.0) {
-        startValue -= uranometriaNDivides(divide + 1).toInt
+        startValue -= uranometriaNDivides(divide + 1)
         divide += 1; divide
       }
-      var angle: Double = ra * uranometriaNDivides(divide).asInstanceOf[Int] / 24.0
+      var angle: Double = ra * uranometriaNDivides(divide) / 24.0
       if (uranometriaNDivides(divide) >= 20) angle += 0.5
       else if (uranometriaNDivides(divide) == 12) angle += 5.0/ 12.0
       var page: Int = angle.asInstanceOf[Int] % uranometriaNDivides(divide) + startValue
       if (page >= 472 && fix472) page = (472 + 473) - page
-      return page
+      page
     }
 
     /**
@@ -108,9 +109,7 @@ object AtlasChart{
      * @param dec Declination in radians.
      * @return The appropriate Uranometria page.
      */
-    def uranometria(ra: Double, dec: Double): Int = {
-      return uranometria(ra, dec, false)
-    }
+    def uranometria(ra: Double, dec: Double): Int = uranometria(ra, dec, fix472 = false)
 
     def uranometria(pos:Vector3D): Int = uranometria(pos.getRaRadian,pos.getDeRadian)
 
@@ -149,6 +148,6 @@ object AtlasChart{
         if (page > -1) buff.append('/')
         buff.append(librationZonePages(zone_no))
       }
-      return if (-1 == page) "" else buff.toString
+      if (-1 == page) "" else buff.toString
     }
   }

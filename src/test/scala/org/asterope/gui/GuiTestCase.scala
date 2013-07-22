@@ -19,52 +19,48 @@ import java.awt.{Window, Component, Container}
  */
 abstract class GuiTestCase extends BeansTestCase{
 
+  //  val guiBeans = onEDTWait{
+  //    new GuiBeans{}
+  //  }
 
-//  val guiBeans = onEDTWait{
-//    new GuiBeans{}
-//  }
+  // private var chartWinInitialized = false
 
-  private var chartWinInitialized = false
-
-//  lazy val chartWin = onEDTWait{
-//    val v = guiBeans.chartWindow
-//    chartWinInitialized = true
-//    v.setState(java.awt.Frame.ICONIFIED)
-//    v.setVisible(true)
-//    v
-//  }
-
+  //  lazy val chartWin = onEDTWait{
+  //    val v = guiBeans.chartWindow
+  //    chartWinInitialized = true
+  //    v.setState(java.awt.Frame.ICONIFIED)
+  //    v.setVisible(true)
+  //    v
+  //  }
 
 
-//  override def tearDown{
-//    try{
-//      if(chartWinInitialized){
-//        onEDTWait{chartWin.setVisible(false)}
-//        chartWin.dispose
-//      }
-//      guiBeans.shutdown()
-//    }finally{
-//      super.tearDown() //make sure previous context is disposed
-//    }
-//  }
 
-  def sleep(i:Int){
+  //  override def tearDown{
+  //    try{
+  //      if(chartWinInitialized){
+  //        onEDTWait{chartWin.setVisible(false)}
+  //        chartWin.dispose
+  //      }
+  //      guiBeans.shutdown()
+  //    }finally{
+  //      super.tearDown() //make sure previous context is disposed
+  //    }
+  //  }
+
+  def sleep(i: Int = 500): Unit = {
     assertNotEDT()
     Thread.sleep(i)
     //now need to wait until EDT queue is empty
     //easiest way is to send an event, and wait until itis executed
     val latch = new CountDownLatch(1)
-    onEDT{latch.countDown}
-    latch.await(10000,TimeUnit.MILLISECONDS)
-    assert(latch.getCount == 0,"EDT dead block")
+    onEDT {
+      latch.countDown()
+    }
+    latch.await(10000, TimeUnit.MILLISECONDS)
+    assert(latch.getCount == 0, "EDT dead block")
   }
 
-  def sleep(){
-    sleep(500)
-  }
-
-
-//  /** pause current thread until chart is refreshed */
+  //  /** pause current thread until chart is refreshed */
 //  def waitUntilChartRefreshEnd(){
 //    val lock = new Object();
 //    chartWin.onChartRefreshFinish{m=>
@@ -101,21 +97,22 @@ abstract class GuiTestCase extends BeansTestCase{
   /**
    * @return list of all children and grand children...
    */
-  def allSiblings(component:Component):List[Component] = {
-    onEDTWait{
+  def allSiblings(component: Component): List[Component] =
+    onEDTWait {
       val ret = new ListBuffer[Component]
       //recursive function which traverses hierarchy and adds all child to ListBuffer
-      def recur(c:Component){
-        ret+=c
-        if(c.isInstanceOf[Container])
-          c.asInstanceOf[Container].getComponents.foreach(recur)
+      def recur(c: Component) {
+        ret += c
+        c match {
+          case container: Container => container.getComponents.foreach(recur)
+          case _ =>
+        }
       }
       //trigger that thing
 
       recur(component)
       ret.toList
     }
-  }
 
   /**
    * Find Button with given name
@@ -153,68 +150,53 @@ abstract class GuiTestCase extends BeansTestCase{
   }
 
 
-  /**
-   * Find JList with given name
-   */
-  def findJList(container:Container,name:String):JList[Any] = {
+  /** Finds JList with given name */
+  def findJList(container: Container, name: String): JList /* [Any] */ = {
     allSiblings(container)
       .find(_.getName == name)
-      .filter(_.isInstanceOf[JList[Any]])
-      .map(_.asInstanceOf[JList[Any]])
-      .getOrElse(throw new AssertionFailedError("JList with name '"+name+"' was not found"))
+      .filter(_.isInstanceOf[JList /* [Any] */])
+      .map(_.asInstanceOf[JList /* [Any] */])
+      .getOrElse(throw new AssertionFailedError("JList with name '" + name + "' was not found"))
   }
 
-  /**
-   * Find JLabel with given name
-   */
-  def findJLabel(container:Container,name:String):JLabel = {
+  /** Finds JLabel with given name */
+  def findJLabel(container: Container, name: String): JLabel = {
     allSiblings(container)
       .find(_.getName == name)
       .filter(_.isInstanceOf[JLabel])
       .map(_.asInstanceOf[JLabel])
-      .getOrElse(throw new AssertionFailedError("JLabel with name '"+name+"' was not found"))
+      .getOrElse(throw new AssertionFailedError("JLabel with name '" + name + "' was not found"))
   }
 
-  /**
-   * Find JCheckBox with given name
-   */
-  def findJCheckBox(container:Container,name:String):JCheckBox = {
+  /** Finds JCheckBox with given name */
+  def findJCheckBox(container: Container, name: String): JCheckBox = {
     allSiblings(container)
       .find(_.getName == name)
       .filter(_.isInstanceOf[JCheckBox])
       .map(_.asInstanceOf[JCheckBox])
-      .getOrElse(throw new AssertionFailedError("JCheckBox with name '"+name+"' was not found"))
+      .getOrElse(throw new AssertionFailedError("JCheckBox with name '" + name + "' was not found"))
   }
 
-  /**
-   * Find JSlider with given name
-   */
-  def findJSlider(container:Container,name:String):JSlider = {
+  /** Finds JSlider with given name */
+  def findJSlider(container: Container, name: String): JSlider = {
     allSiblings(container)
       .find(_.getName == name)
       .filter(_.isInstanceOf[JSlider])
       .map(_.asInstanceOf[JSlider])
-      .getOrElse(throw new AssertionFailedError("JSlider with name '"+name+"' was not found"))
+      .getOrElse(throw new AssertionFailedError("JSlider with name '" + name + "' was not found"))
   }
 
-  /**
-   * Find JComboBox with given name
-   */
-  def findJComboBox(container:Container,name:String):JComboBox[Any] = {
+  /** Finds JComboBox with given name */
+  def findJComboBox(container: Container, name: String): JComboBox /* [Any] */ = {
     allSiblings(container)
       .find(_.getName == name)
-      .filter(_.isInstanceOf[JComboBox[Any]])
-      .map(_.asInstanceOf[JComboBox[Any]])
-      .getOrElse(throw new AssertionFailedError("JComboBox with name '"+name+"' was not found"))
+      .filter(_.isInstanceOf[JComboBox /* [Any] */])
+      .map(_.asInstanceOf[JComboBox /* [Any] */])
+      .getOrElse(throw new AssertionFailedError("JComboBox with name '" + name + "' was not found"))
   }
 
-
-  /**
-   * Check or uncheck an button, setSelected does not trigger listeners
-   */
-  def setChecked(button:AbstractButton, checked:Boolean){
-    if(button.isSelected() != checked)
-      button.doClick
-  }
-
+  /** Checks or unchecks a button, setSelected does not trigger listeners */
+  def setChecked(button: AbstractButton, checked: Boolean): Unit =
+    if (button.isSelected != checked)
+      button.doClick()
 }

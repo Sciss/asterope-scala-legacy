@@ -12,7 +12,6 @@ import org.asterope.chart._
 trait ChartEditorActions {
   self: ChartEditor =>
 
-
   /*
    * zoom actions
    */

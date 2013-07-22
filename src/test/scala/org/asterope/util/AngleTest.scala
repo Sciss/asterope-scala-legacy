@@ -1,11 +1,7 @@
 package org.asterope.util
 
-
 class AngleTest extends ScalaTestCase{
-
-  def testParseRaDe{
-    import Angle._
-
+  def testParseRaDe(): Unit = {
     assert(
       (Angle.parseRa("20 54 05.689"),Angle.parseDe("+37 01 17.38"))
       ===
@@ -46,12 +42,12 @@ class AngleTest extends ScalaTestCase{
 
   }
 
-    def testParse: Unit = {
+    def testParse(): Unit = {
       assert(Angle.parseRa("1", "2", "3").uas === 1l * 15l * 60l * 60l * 1000l * 1000l + 2l * 15l * 60l * 1000l * 1000l + 3l * 15l * 1000l * 1000l)
       assert(Angle.parseDe("+", "1", "2", "3").uas === 1l * 60l * 60l * 1000l * 1000l + 2l * 60l * 1000l * 1000l + 3l * 1000l * 1000l)
     }
 
-    def testParse2: Unit = {
+    def testParse2(): Unit = {
       assert(Angle.parseRa("1h2m3s").uas === 1l * 15l * 60l * 60l * 1000l * 1000l + 2l * 15l * 60l * 1000l * 1000l + 3l * 15l * 1000l * 1000l)
       assert(Angle.parseRa("02 51.2").uas === 2l * 15l * 60l * 60l * 1000l * 1000l + 512l * 15l * 60l * 1000l * 100l)
       assert(Angle.parseDe("+1d2'3\"").uas === 1l * 60l * 60l * 1000l * 1000l + 2l * 60l * 1000l * 1000l + 3l * 1000l * 1000l)
@@ -59,7 +55,7 @@ class AngleTest extends ScalaTestCase{
       assert(Angle.parseDe("+13 12").uas === 13l * 60l * 60l * 1000l * 1000l + 12l * 60l * 1000l * 1000l)
     }
     
-  def testConversion(){
+  def testConversion(): Unit = {
     assert(Angle.D2R * 1d === math.toRadians(1d))
     assert(Angle.R2D * 1d === math.toDegrees(1d))
     assert(Angle.H2D * 1d === 15d)
@@ -76,25 +72,23 @@ class AngleTest extends ScalaTestCase{
     assert(Angle.R2Mas === 1d / Angle.Mas2R)
   }
   
-  def testDistance(){
+  def testDistance(): Unit = {
     assert(Angle.distance(Angle.D2R * 1d, 0d, Angle.D2R * 2d, 0d) === Angle.D2R * 1d)
     assert(Angle.distance(0, Angle.D2R * 90d, Angle.D2R * 180d, -(Angle.D2R * 90d)) === Angle.D2R * 180d)
   }
 
-  def testRaToString(){
+  def testRaToString(): Unit = {
     assert("11h" === Angle.raToString(Angle.H2R * 11))
     assert("11h 12m" === Angle.raToString(Angle.H2R * 11 + Angle.H2R * 12 / 60))
     assert("11h 12m 13s" === Angle.raToString(Angle.H2R * 11 + Angle.H2R * 12 / 60 + Angle.H2R * 13 / 3600))
     assert("11h 12m 13.3s" === Angle.raToString(Angle.H2R * 11 + Angle.H2R * 12 / 60 + Angle.H2R * 13.3 / 3600))
   }
 
-  def testDeToString(){
+  def testDeToString(): Unit = {
     assert("11" + Angle.DEGREE_SIGN === Angle.deToString(Angle.D2R * 11))
     assert("11" + Angle.DEGREE_SIGN + "12'" === Angle.deToString(Angle.D2R * 11 + Angle.M2R * 12))
     assert("11" + Angle.DEGREE_SIGN + "12'13\"" === Angle.deToString(Angle.D2R * 11 + Angle.M2R * 12 + Angle.S2R * 13))
     assert("11" + Angle.DEGREE_SIGN + "12'13.3\"" === Angle.deToString(Angle.D2R * 11 + Angle.M2R * 12 + Angle.S2R * 13.3))
     assert("-11" + Angle.DEGREE_SIGN + "12'" === Angle.deToString(-(Angle.D2R * 11 + Angle.M2R * 12)))
   }
-  
-    
 }

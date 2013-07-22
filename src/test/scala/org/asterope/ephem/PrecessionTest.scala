@@ -2,23 +2,23 @@ package org.asterope.ephem
 
 import org.asterope.util._
 
-class PrecessionTest extends ScalaTestCase{
+class PrecessionTest extends ScalaTestCase {
 
-  def testPrecession{
+  def testPrecession() {
     System.out.println("Precession Test")
 
-    val ra = "05h 32m 59.061s"
-    val dec = "-05d 11' 52.28''"
+    // val ra  = "05h 32m 59.061s"
+    // val dec = "-05d 11' 52.28''"
     var loc = new LocationElement(EphemUtils.parseRightAscension(05, 32, 59.061), EphemUtils.parseDeclination(-5, 11, 52.28), 1.0)
 
     println(loc.getLongitude * Angle.R2D)
-    println(loc.getLatitude * Angle.R2D)
+    println(loc.getLatitude  * Angle.R2D)
 
-    val q = LocationElement.parseLocationElement(loc)
-    val eq = Precession.B1950ToJ2000(q)
-    loc = LocationElement.parseRectangularCoordinates(eq)
+    val q   = LocationElement.parseLocationElement(loc)
+    val eq  = Precession.B1950ToJ2000(q)
+    loc     = LocationElement.parseRectangularCoordinates(eq)
 
-    println("ra: " + EphemUtils.formatRA(loc.getLongitude))
+    println("ra: "  + EphemUtils.formatRA(loc.getLongitude))
     println("dec: " + EphemUtils.formatDEC(loc.getLatitude))
     println("0: " + eq(0))
     println("1: " + eq(1))

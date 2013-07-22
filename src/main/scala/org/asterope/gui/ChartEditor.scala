@@ -321,7 +321,7 @@ class ChartEditor(
       val polygon2  = new PPath(polygon)
       val c         = detailChart.colors.fg
       polygon2.setPaint(new Color(c.getRed, c.getGreen, c.getBlue, 64))
-      polygon2.setStroke(new BasicStroke(1F))
+      polygon2.setStroke(new BasicStroke(1f))
       polygon2.setStrokePaint(c)
       onEDTWait {
         setInteracting(!lowQuality)
