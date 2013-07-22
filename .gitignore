@@ -1,5 +1,7 @@
-build/
-out/
 profile/
+target/
+lib_managed/
+src_managed/
+project/boot/
 .idea/
-/netcache/
+.idea_modules/

@@ -1,4 +1,6 @@
-**NOTE: This project is abadoned, there is new rewrite to Kotlin at http://github.com/jankotek/asterope**
+**NOTE: fork from https://github.com/jankotek/asterope-scala-legacy**
+
+**NOTE: builds and runs with sbt (e.g., `sbt run`)**
 
 Asterope is an astronomical application focused on advanced amateur astronomers.
 When finished it will provide skycharting, ephemeris, observation planning,
