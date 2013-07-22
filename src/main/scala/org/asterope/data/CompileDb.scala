@@ -43,11 +43,10 @@ object CompileDb extends Beans with App {
 
 	
 	/** open InputStream from gziped file  */
-	def gzip(f:File) = new GZIPInputStream(new FileInputStream(f))
-	
+	def gzip(f: File) = new GZIPInputStream(new FileInputStream(f))
 
 	
-	if(!catalogDao.isCatalogImported("sacDeepSky")){
+	if (!catalogDao.isCatalogImported("sacDeepSky")) {
 		println("Importing SAC Deep Sky catalog")
     val sac = new SacDeepSkyCatalog()
     sac.queryForAll().foreach(deepSkyDao.addDeepSky)
@@ -151,40 +150,39 @@ object CompileDb extends Beans with App {
 		commit()
 	}
 	
-	if(!catalogDao.isCatalogImported("constellationLine")){
+	if (!catalogDao.isCatalogImported("constellationLine")) {
 		println("Importing Constel Lines")
 		val src = Source.fromFile(CONSTELLATION_LINES_FILE)
-		for(
-				line <- src.getLines()
-				if !line.startsWith("#") && line.trim != "";
-				split = line.replaceAll("[ ]+"," ").split(" ");
-				constellation = Constel.withName(split(0));
-				lineCount = split(1).toInt;
-				i <- 0 until lineCount;
-				hip1 = split(2+i*2).toInt;
-				hip2 = split(2+i*2+1).toInt
-		){		
+		for {
+				line     <- src.getLines()
+				if !line.startsWith("#") && line.trim != ""
+				split     = line.replaceAll("[ ]+", " ").split(" ")
+				constellation = Constel.withName(split(0))
+				lineCount = split(1).toInt
+				i        <- 0 until lineCount
+				hip1      = split(2 + i * 2    ).toInt
+				hip2      = split(2 + i * 2 + 1).toInt
+    } {
 			def findHip(hip:String):Vector3D = {
 				List(hip,hip+"A",hip+"B").foreach{ h=>
 					val iter = liteStarDao.objectsByName(h)
 					if(iter.hasNext) 
 						return iter.next().vector
 				}
-				throw new Error("ID not found:"+hip)	
-			}			
+        throw new Error("ID not found:" + hip)
+			}
 
-			val v1 = findHip("HIP "+hip1)
-			val v2 = findHip("HIP "+hip2)
-			val line = new ConstelLine(v1,v2,
-					hip1.toInt, hip2, constellation.toString, 1)
-			constelLineDao.add(line)
-
+      val v1 = findHip("HIP " + hip1)
+      val v2 = findHip("HIP " + hip2)
+      val line = new ConstelLine(v1, v2,
+        hip1.toInt, hip2, constellation.toString, 1)
+      constelLineDao.add(line)
 		}
 		catalogDao.setCatalogImported("constellationLine")
 		commit()
 	}
 
-  if(!catalogDao.isCatalogImported("constellationBoundary")){
+  if (!catalogDao.isCatalogImported("constellationBoundary")) {
     println("Importing Constel Boundary Lines")
     CompileDbUtils.readConstelBounds.foreach(constelBoundaryDao.add)
     catalogDao.setCatalogImported("constellationBoundary")

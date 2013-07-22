@@ -16,96 +16,88 @@ import scala.collection.JavaConversions._
 
 object AllSkySurvey extends ChartFeature[AllSkySurveyMem] {
 
-
-
   val defaultConfig = new AllSkySurveyMem()
 
-  def updateChart(chart: Chart, config:AllSkySurveyMem=defaultConfig){
+  def updateChart(chart: Chart, config: AllSkySurveyMem = defaultConfig): Unit = {
 
     //add label with copyright
     val text = new PText(config.survey.copyright)
-    text.setPaint(new Color(chart.colors.bg.getRed,chart.colors.bg.getGreen,chart.colors.bg.getBlue,128))
+    text.setPaint(new Color(chart.colors.bg.getRed, chart.colors.bg.getGreen, chart.colors.bg.getBlue, 128))
     text.setTextPaint(chart.colors.fg)
-    text.centerBoundsOnPoint(chart.width - text.getWidth/2 - 10, chart.height - text.getHeight/2 - 10)
-    chart.addNode(Layer.skyview,text,zorder = 1);
+    text.centerBoundsOnPoint(chart.width - text.getWidth / 2 - 10, chart.height - text.getHeight / 2 - 10)
+    chart.addNode(Layer.skyview, text, zorder = 1);
 
-    def translate(pos:Vector3D):Vector3D = {
-      config.survey.coordSys match{
+    def translate(pos: Vector3D): Vector3D = {
+      config.survey.coordSys match {
         case "E" => pos
         case "G" => Galactic.getRotater.transform(pos)
       }
     }
 
-    def untranslate(pos:Vector3D):Vector3D = {
-      config.survey.coordSys match{
+    def untranslate(pos: Vector3D): Vector3D = {
+      config.survey.coordSys match {
         case "E" => pos
         case "G" => Galactic.getRotater.inverse.transform(pos)
       }
     }
 
+    val norder  = getNorder(chart.pixelAngularSize, config)
+    val nside   = Pixelization.norder2nside(norder)
+    val tools   = new PixTools(nside)
 
-    val norder = getNorder(chart.pixelAngularSize,config)
-    val nside = Pixelization.norder2nside(norder)
-    val tools = new PixTools(nside)
-
-
-    val pixelsRing = tools.query_disc(translate(chart.position),chart.fieldOfView.toRadian,false)
-    val futures = for(
-      ring<-pixelsRing.iterator(); //TODO replace with 'longIterator' to reduce instance creation
-      nested = PixToolsNested.ring2nest(nside,ring);
-      bounds = tools.makePix2Vect(ring);
-      north = chart.wcs.project(untranslate(bounds.north));
-      south = chart.wcs.project(untranslate(bounds.south));
-      west = chart.wcs.project(untranslate(bounds.west));
-      east = chart.wcs.project(untranslate(bounds.east));
-      if(north.isDefined && south.isDefined && west.isDefined && east.isDefined);
-      points = Array(south.get,east.get,west.get,north.get);
-      x = points.map(_.x).min;
-      y = points.map(_.y).min;
-      w = points.map(_.x).max - x;
-      h = points.map(_.y).max - y;
-      if(chart.isInsideCanvas(new PBounds(x,y,w,h)));
-      file = config.survey.url+"Norder"+norder+"/Dir"+(nested-nested%10000)+"/Npix"+nested+config.survey.suffix
-    )yield future[Unit]{
-
-        val is = GetURL(new URL(file));
+    val pixelsRing = tools.query_disc(translate(chart.position), chart.fieldOfView.toRadian, false)
+    val futures = for {
+      ring <- pixelsRing.iterator()   //TODO replace with 'longIterator' to reduce instance creation
+      nested  = PixToolsNested.ring2nest(nside, ring)
+      bounds  = tools.makePix2Vect(ring)
+      north   = chart.wcs.project(untranslate(bounds.north))
+      south   = chart.wcs.project(untranslate(bounds.south))
+      west    = chart.wcs.project(untranslate(bounds.west ))
+      east    = chart.wcs.project(untranslate(bounds.east ))
+      if north.isDefined && south.isDefined && west.isDefined && east.isDefined
+      points  = Array(south.get, east.get, west.get, north.get)
+      x       = points.map(_.x).min
+      y       = points.map(_.y).min
+      w       = points.map(_.x).max - x
+      h       = points.map(_.y).max - y
+      if chart.isInsideCanvas(new PBounds(x, y, w, h))
+      file    = config.survey.url + "Norder" + norder + "/Dir" + (nested - nested % 10000) + "/Npix" + nested + config.survey.suffix
+    }
+    yield future[Unit] {
+        val is = GetURL(new URL(file))
         checkInterrupted()
         val img = ImageIO.read(is)
         checkInterrupted()
-        object node extends PNode{
-          setBounds(x,y,w,h)
-          override def paint(paintContext:PPaintContext) {
+        object node extends PNode {
+          setBounds(x, y, w, h)
+
+          override def paint(paintContext: PPaintContext) {
             val g2 = paintContext.getGraphics;
-            drawTriangle(g2,img,points,0,config.survey.imgWidth)
-            drawTriangle(g2,img,points,3,config.survey.imgWidth)
+            drawTriangle(g2, img, points, 0, config.survey.imgWidth)
+            drawTriangle(g2, img, points, 3, config.survey.imgWidth)
           }
         }
-        chart.exec{
-          chart.addNode(layer=Layer.skyview, node=node)
+        chart.exec {
+          chart.addNode(layer = Layer.skyview, node = node)
           node.repaint()
         }
         checkInterrupted()
-    }
-
+      }
 
     //wait for all scheduled futures to finish
     waitOrInterrupt(futures.toBuffer)
-
-
-
-
   }
 
-  def clearChart(chart: Chart){
-    chart.exec{
+  def clearChart(chart: Chart): Unit = {
+    chart.exec {
       chart.getLayer(Layer.skyview).removeAllChildren()
     }
   }
 
-  def getNorder(pixelSize:Angle, mem:AllSkySurveyMem):Int = {
-    val ang = pixelSize.toArcSec * mem.survey.imgWidth
-    val nside = PixTools.GetNSide(ang)
-    val norder = Pixelization.nside2norder(nside)
+  def getNorder(pixelSize: Angle, mem: AllSkySurveyMem): Int = {
+    val ang     = pixelSize.toArcSec * mem.survey.imgWidth
+    val nside   = PixTools.GetNSide(ang)
+    val norder  = Pixelization.nside2norder(nside)
     2.max(norder.min(mem.survey.maxNorder))
   }
 
@@ -172,11 +164,10 @@ object AllSkySurvey extends ChartFeature[AllSkySurveyMem] {
   }
 
 
-  case class Survey(url:String, name:String, description:String,
-                            copyright:String, copyrightUrl:String,
-                            imgWidth:Int = 512,maxNorder:Int = 8, suffix:String = ".jpg",
-                            coordSys:String = "G")
-
+  case class Survey(url: String, name: String, description: String,
+                    copyright: String, copyrightUrl: String,
+                    imgWidth: Int = 512, maxNorder: Int = 8, suffix: String = ".jpg",
+                    coordSys: String = "G")
 
   val dssColorSurvey =
     new Survey(url= "http://alasky.u-strasbg.fr/DssColor/",
@@ -191,9 +182,7 @@ object AllSkySurvey extends ChartFeature[AllSkySurveyMem] {
     copyright = "(c) Axel Mellinger. Permission is granted for use in research and personal,\n non-commercial use. Please contact Axel Mellinger for permission for other use",
     copyrightUrl = "http://home.arcor.de/axel.mellinger/",
     maxNorder = 4, coordSys = "G")
-
-
 }
 
-case class AllSkySurveyMem( survey:AllSkySurvey.Survey = AllSkySurvey.dssColorSurvey)
+case class AllSkySurveyMem(survey: AllSkySurvey.Survey = AllSkySurvey.dssColorSurvey)
 

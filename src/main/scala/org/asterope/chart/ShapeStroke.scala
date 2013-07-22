@@ -19,55 +19,53 @@ import scala.List
 import java.awt._
 import java.awt.geom._
 
-/**Java2D stroke which paints shapes along its path. See
- * http://www.jhlabs.com/java/java2d/strokes/
- */
-class ShapeStroke(shapes2:List[Shape], advance:Float) extends Stroke {
+/** Java2D stroke which paints shapes along its path. See
+  * http://www.jhlabs.com/java/java2d/strokes/
+  */
+class ShapeStroke(shapes2: List[Shape], advance: Float) extends Stroke {
 
-  def this(shape:Shape, advance:Float) = this(List(shape),advance)
+  def this(shape: Shape, advance: Float) = this(List(shape), advance)
 
-  private var t = new AffineTransform
+  private val t = new AffineTransform
 
-  private val shapes:Array[Shape] = shapes2.map{s=>
+  private val shapes: Array[Shape] = shapes2.map { s =>
     val bounds = s.getBounds2D
     t.setToTranslation(-bounds.getCenterX, -bounds.getCenterY)
     t.createTransformedShape(s)
-
   }.toArray
 
-
   def createStrokedShape(shape: Shape): Shape = {
-    val result = new GeneralPath
-    val it = new FlatteningPathIterator(shape.getPathIterator(null), 1)
-    val points = new Array[Float](6)
-    var lastX: Float = 0
-    var lastY: Float = 0
-    var next: Float = 0
-    var currentShape: Int = 0
-    var length: Int = shapes.length
+    val result        = new GeneralPath
+    val it            = new FlatteningPathIterator(shape.getPathIterator(null), 1)
+    val points        = new Array[Float](6)
+    var lastX         = 0f
+    var lastY         = 0f
+    var next          = 0f
+    var currentShape  = 0
+    var length        = shapes.length
     while (currentShape < length && !it.isDone) {
       it.currentSegment(points) match {
-        case PathIterator.SEG_MOVETO => {
+        case PathIterator.SEG_MOVETO =>
           lastX = points(0)
           lastY = points(1)
           result.moveTo(points(0), points(1))
           next = 0
-        }
-        case PathIterator.SEG_CLOSE => {}
 
-        case PathIterator.SEG_LINETO => {
+        case PathIterator.SEG_CLOSE =>
+
+        case PathIterator.SEG_LINETO =>
           val dx: Float = points(0) - lastX
           val dy: Float = points(1) - lastY
-          val distance: Float = math.sqrt(dx * dx + dy * dy).toFloat
+          val distance  = math.sqrt(dx * dx + dy * dy).toFloat
           if (distance >= next) {
-            val angle: Float = math.atan2(dy, dx).toFloat
+            val angle = math.atan2(dy, dx).toFloat
             while (currentShape < length && distance >= next) {
-              val x: Float = lastX + next * dx / distance
-              val y: Float = lastY + next * dy / distance
+              val x = lastX + next * dx / distance
+              val y = lastY + next * dy / distance
               t.setToTranslation(x, y)
               t.rotate(angle)
               result.append(t.createTransformedShape(shapes(currentShape)), false)
-              next += advance
+              next         += advance
               currentShape += 1
               currentShape %= length
             }
@@ -75,13 +73,10 @@ class ShapeStroke(shapes2:List[Shape], advance:Float) extends Stroke {
           next -= distance
           lastX = points(0)
           lastY = points(1)
-        }
       }
-      it.next
+      it.next()
     }
-    return result
+    result
   }
-
-
 }
 

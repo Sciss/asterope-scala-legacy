@@ -13,194 +13,189 @@ import org.apache.commons.math.geometry.Vector3D
  * This class is used in 'BaseChart', each system have its own class
  */
 case class CoordinateGridConfig2(
-	showLines:Boolean,
-	numberOfLines:Int = 3,
-	showPoles:Boolean = true,
-	showEquator:Boolean = true,
-  equatorStroke:BasicStrokeConfig = new BasicStrokeConfig()
-	
+  showLines     : Boolean,
+  numberOfLines : Int               = 3,
+  showPoles     : Boolean           = true,
+  showEquator   : Boolean           = true,
+  equatorStroke : BasicStrokeConfig = new BasicStrokeConfig()
 )
 
 case class CoordinateGridConfig(
-	coordinateGridJ2000:CoordinateGridConfig2 = CoordinateGridConfig2(
-    showLines = true, showPoles = true, showEquator = false),
-	coordinateGridJ1950:CoordinateGridConfig2 = CoordinateGridConfig2(
-    showLines = false, showPoles = false, showEquator = false),
-	coordinateGridGalactic:CoordinateGridConfig2 = CoordinateGridConfig2(
-    showLines = false, showPoles = true, showEquator = true,
-    equatorStroke = new BasicStrokeConfig(dash = List(5,5))),
-	coordinateGridEcliptic:CoordinateGridConfig2 = CoordinateGridConfig2(
-    showLines = false, showPoles = true, showEquator = true,
-    equatorStroke = new BasicStrokeConfig(dash = List(5,5)))
+  coordinateGridJ2000: CoordinateGridConfig2 = CoordinateGridConfig2(
+   showLines = true, showPoles = true, showEquator = false),
+  coordinateGridJ1950: CoordinateGridConfig2 = CoordinateGridConfig2(
+   showLines = false, showPoles = false, showEquator = false),
+  coordinateGridGalactic: CoordinateGridConfig2 = CoordinateGridConfig2(
+   showLines = false, showPoles = true, showEquator = true,
+   equatorStroke = new BasicStrokeConfig(dash = List(5, 5))),
+  coordinateGridEcliptic: CoordinateGridConfig2 = CoordinateGridConfig2(
+   showLines = false, showPoles = true, showEquator = true,
+   equatorStroke = new BasicStrokeConfig(dash = List(5, 5)))
 )
-
 
 /**
  * Paints coordinate grids on chart
  *
  * @author Jan Kotek
  */
-object CoordinateGrid extends ChartFeature[CoordinateGridConfig]{
-	
-	/**coordinate steps*/
-	protected val deSteps = List[Angle](90.degree, 45.degree, 30.degree, 15.degree, 10.degree, 5.degree, 2.degree, 1.degree, 
-			30.arcMinute, 15.arcMinute, 10.arcMinute, 5 .arcMinute, 2.arcMinute);
+object CoordinateGrid extends ChartFeature[CoordinateGridConfig] {
 
-	protected val raSteps = {
-		val hour = 15.degree
-		val minute = hour/60
-		val second = minute/60
-		List[Angle](hour * 6, hour * 3, hour * 2, hour * 1, minute * 30, minute * 15, minute * 10, minute * 5,
-				minute * 2, minute * 1, second * 30, second * 15)
-	}
-			
+  /** coordinate steps */
+  protected val deSteps = List[Angle](90.degree, 45.degree, 30.degree, 15.degree, 10.degree, 5.degree, 2.degree, 1.degree,
+    30.arcMinute, 15.arcMinute, 10.arcMinute, 5.arcMinute, 2.arcMinute)
 
+  protected val raSteps = {
+    val hour = 15.degree
+    val minute = hour / 60
+    val second = minute / 60
+    List[Angle](hour * 6, hour * 3, hour * 2, hour * 1, minute * 30, minute * 15, minute * 10, minute * 5,
+      minute * 2, minute * 1, second * 30, second * 15)
+  }
 
-	protected val j1950Rotater = CoordinateSystem.factory("J1950").getRotater
-	protected val j1950Derotater = j1950Rotater.inverse
-	protected val galacticRotater = CoordinateSystem.factory("Galactic").getRotater
-	protected val galacticDerotater = galacticRotater.inverse
-	protected val eclipticRotater = CoordinateSystem.factory("Ecliptic").getRotater
-	protected val eclipticDerotater = eclipticRotater.inverse
-	
-	def defaultConfig = new CoordinateGridConfig()
-	
-	def updateChart(chart: Chart, config:CoordinateGridConfig){
+  protected val j1950Rotater      = CoordinateSystem.factory("J1950").getRotater
+  protected val j1950Derotater    = j1950Rotater.inverse
+  protected val galacticRotater   = CoordinateSystem.factory("Galactic").getRotater
+  protected val galacticDerotater = galacticRotater.inverse
+  protected val eclipticRotater   = CoordinateSystem.factory("Ecliptic").getRotater
+  protected val eclipticDerotater = eclipticRotater.inverse
 
-	   paintLines(chart,Layer.coordinateGridJ2000,config.coordinateGridJ2000,None,None,"j2000")
-	   paintLines(chart,Layer.coordinateGridJ1950,config.coordinateGridJ1950,Some(j1950Rotater),Some(j1950Derotater),"j1950")
-	   paintLines(chart,Layer.coordinateGridGalactic,config.coordinateGridGalactic,Some(galacticRotater),Some(galacticDerotater),"galactic")
-	   paintLines(chart,Layer.coordinateGridEcliptic,config.coordinateGridEcliptic,Some(eclipticRotater),Some(eclipticDerotater),"ecliptic")
-	   
-	   if(config.coordinateGridJ2000.showPoles)
-	  	   paintPoles(chart,Layer.coordinateGridJ2000,config.coordinateGridJ2000,None,None);
-	   if(config.coordinateGridJ1950.showPoles)
-	  	   paintPoles(chart,Layer.coordinateGridJ1950,config.coordinateGridJ1950,Some(j1950Rotater),Some(j1950Derotater))
-	   if(config.coordinateGridGalactic.showPoles)
-	  	   paintPoles(chart, Layer.coordinateGridGalactic,config.coordinateGridGalactic,Some(galacticRotater),Some(galacticDerotater))
-	   if(config.coordinateGridEcliptic.showPoles)
-	  	   paintPoles(chart,Layer.coordinateGridEcliptic,config.coordinateGridEcliptic,Some(eclipticRotater),Some(eclipticDerotater))
-	}
-	
-	/**
+  def defaultConfig = new CoordinateGridConfig()
+
+  def updateChart(chart: Chart, config: CoordinateGridConfig): Unit = {
+
+    paintLines(chart, Layer.coordinateGridJ2000, config.coordinateGridJ2000, None, None, "j2000")
+    paintLines(chart, Layer.coordinateGridJ1950, config.coordinateGridJ1950, Some(j1950Rotater), Some(j1950Derotater), "j1950")
+    paintLines(chart, Layer.coordinateGridGalactic, config.coordinateGridGalactic, Some(galacticRotater), Some(galacticDerotater), "galactic")
+    paintLines(chart, Layer.coordinateGridEcliptic, config.coordinateGridEcliptic, Some(eclipticRotater), Some(eclipticDerotater), "ecliptic")
+
+    if (config.coordinateGridJ2000.showPoles)
+      paintPoles(chart, Layer.coordinateGridJ2000, config.coordinateGridJ2000, None, None)
+    if (config.coordinateGridJ1950.showPoles)
+      paintPoles(chart, Layer.coordinateGridJ1950, config.coordinateGridJ1950, Some(j1950Rotater), Some(j1950Derotater))
+    if (config.coordinateGridGalactic.showPoles)
+      paintPoles(chart, Layer.coordinateGridGalactic, config.coordinateGridGalactic, Some(galacticRotater), Some(galacticDerotater))
+    if (config.coordinateGridEcliptic.showPoles)
+      paintPoles(chart, Layer.coordinateGridEcliptic, config.coordinateGridEcliptic, Some(eclipticRotater), Some(eclipticDerotater))
+  }
+
+  /**
 	 * Converts position from one coordinate system to other using given rotater/derotater 
 	 */
-	protected def transform(pos:Vector3D, tater:Option[Rotater]):Vector3D = {
-		if(tater == None)
-			return pos
-		tater.get.transform(pos);
-	}
+  protected def transform(pos: Vector3D, tater: Option[Rotater]): Vector3D = {
+    if (tater == None)
+      return pos
+    tater.get.transform(pos)
+  }
 
   /**In same cases all coordinate lines should be painted.
    * There are two rules: if FOV is bigger than 60 degrees.
    * Or if there are null points (outside of sphere) on chart.
    */
-  protected def shouldDisplayAllLines(chart:Chart):Boolean = {
-    if(chart.fieldOfView > 30.degree) return true
-    for(x <- Range(0, chart.width, chart.width/10);
-       y <-  Range(0, chart.width ,chart.width/10)){
-      val projected = chart.wcs.deproject(x,y)
+  protected def shouldDisplayAllLines(chart: Chart): Boolean = {
+    if (chart.fieldOfView > 30.degree) return true
+    for {
+      x <- Range(0, chart.width, chart.width / 10)
+      y <- Range(0, chart.width, chart.width / 10)
+    } {
+      val projected = chart.wcs.deproject(x, y)
       //if point can not be deprojected to sphere, it is null point
-      if(projected.isEmpty) return true;
+      if (projected.isEmpty) return true
     }
     false
-
   }
 
-	protected def paintLines(chart:Chart, layer:Layer.Value, config:CoordinateGridConfig2,
-                           rotater:Option[Rotater],derotater:Option[Rotater],
-                           labelPrefix:String){
+  protected def paintLines(chart: Chart, layer: Layer.Value, config: CoordinateGridConfig2,
+                           rotater: Option[Rotater], derotater: Option[Rotater],
+                           labelPrefix: String): Unit = {
 
     val showAll = shouldDisplayAllLines(chart)
     val transformedPosition = transform(chart.position,rotater)
-    val deNumberOfLines = config.numberOfLines;
+    val deNumberOfLines = config.numberOfLines
     val deStep = deSteps.find(_< chart.fieldOfView /deNumberOfLines).getOrElse{
       return
     }
 
-    val raNumberOfLines = max(2.0,deNumberOfLines * chart.width/chart.height);
+    val raNumberOfLines = max(2.0,deNumberOfLines * chart.width/chart.height)
     val raStep = raSteps.find(_< chart.fieldOfView / ( raNumberOfLines * cos(transformedPosition.getDeRadian))).getOrElse{
       return
     }
 
-    def roundTo(r:Angle,to:Angle) = Angle(r.uas -r.uas%to.uas)
-    val lineStroke = new BasicStroke(1);
+    def roundTo(r: Angle, to: Angle) = Angle(r.uas - r.uas % to.uas)
+    val lineStroke = new BasicStroke(1)
 
     //draw DE lines
     val deStart = {
-       val v1 = (-90).degree + deStep
-       val v2 = roundTo(transformedPosition.getDeRadian.radian-chart.fieldOfView,deStep)
-       if(showAll || v1>v2) v1 else v2 //make sure that lines do not start to close to south pole
+      val v1 = (-90).degree + deStep
+      val v2 = roundTo(transformedPosition.getDeRadian.radian - chart.fieldOfView, deStep)
+      if (showAll || v1 > v2) v1 else v2 //make sure that lines do not start to close to south pole
     }
 
-	  val deStop = {
-	 	  val v1 = 90.degree - deStep
-	 	  val v2 = roundTo(transformedPosition.getDeRadian.radian+chart.fieldOfView,deStep)
-	 	  if(showAll || v1<v2) v1 else v2 //make sure that lines do not start to close to north pole
-	  }
+    val deStop = {
+      val v1 = 90.degree - deStep
+      val v2 = roundTo(transformedPosition.getDeRadian.radian + chart.fieldOfView, deStep)
+      if (showAll || v1 < v2) v1 else v2 //make sure that lines do not start to close to north pole
+    }
 
-    val fullRa:Boolean = showAll ||
-      chart.position.getDe >80.degree - chart.fieldOfView*2 ||
-      chart.position.getDe <80.degree + chart.fieldOfView*2
+    val fullRa: Boolean = showAll ||
+      chart.position.getDe > 80.degree - chart.fieldOfView * 2 ||
+      chart.position.getDe < 80.degree + chart.fieldOfView * 2
 
     val raStart =
-      if(fullRa) 0.degree
-      else roundTo(chart.position.getRa - chart.fieldOfView *2 / cos(chart.position.getDeRadian),raStep)
+      if (fullRa) 0.degree
+      else roundTo(chart.position.getRa - chart.fieldOfView * 2 / cos(chart.position.getDeRadian), raStep)
     val raStop =
-      if(fullRa) 360.degree
-      else roundTo(chart.position.getRa + chart.fieldOfView *2 / cos(chart.position.getDeRadian),raStep)
+      if (fullRa) 360.degree
+      else roundTo(chart.position.getRa + chart.fieldOfView * 2 / cos(chart.position.getDeRadian), raStep)
 
-
-    for(
-      de <- deStart.to(deStop,deStep);
-      if(config.showLines || (config.showEquator && de == 0.degree));
-      start = rade2Vector(0.degree,de);
+    for {
+      de <- deStart.to(deStop, deStep)
+      if config.showLines || (config.showEquator && de == 0.degree)
+      start = rade2Vector(0.degree, de)
       line = RotatingSkyLine(
-        transform(start,derotater),
-        transform(Vector3D.MINUS_K,derotater),
+        transform(start, derotater),
+        transform(Vector3D.MINUS_K, derotater),
         raStop - raStart
-      );
-      projected <- chart.projectLine(line);
+      )
+      projected <- chart.projectLine(line)
       path = new PPath(projected)
-    ){
+    } {
       checkInterrupted()
 
       val label = "  " + (//special label for equator
-        if(config.showEquator && de == 0.degree) " "+Chart.resMap.getString(labelPrefix+"Equator")
+        if (config.showEquator && de == 0.degree) " " + Chart.resMap.getString(labelPrefix + "Equator")
         else Angle.deToString(de.toRadian)
       )
-      assert(label!=null);
+      assert(label != null)
 
-      val stroke =  //on equator use stroke from config
-        if(config.showEquator && de == 0.degree) config.equatorStroke.getStroke
+      val stroke = //on equator use stroke from config
+        if (config.showEquator && de == 0.degree) config.equatorStroke.getStroke
         else lineStroke
 
-      val text = new PPath(ChartUtils.textAlongPath(path.getPathReference,label))
+      val text = new PPath(ChartUtils.textAlongPath(path.getPathReference, label))
       text.setPaint(chart.colors.gridLabel)
       text.setStroke(null)
       path.addChild(text)
 
-      path.setStroke(stroke);
+      path.setStroke(stroke)
       path.setStrokePaint(chart.colors.gridColor)
 
-      chart.addNode(layer,path)
+      chart.addNode(layer, path)
     }
-
 
     if(!config.showLines) return
 
     //paint RA lines
 
-    for(
-      ra <-raStart.to(raStop-1.arcSec,raStep);
-      point1 = rade2Vector(ra,deStart);
-      point2 = rade2Vector(ra,deStop);
-      line = new TwoPointSkyLine(transform(point1,derotater), transform(point2,derotater));
-      projected <- chart.projectLine(line);
+    for {
+      ra <- raStart.to(raStop - 1.arcSec, raStep)
+      point1 = rade2Vector(ra, deStart)
+      point2 = rade2Vector(ra, deStop )
+      line = new TwoPointSkyLine(transform(point1, derotater), transform(point2, derotater))
+      projected <- chart.projectLine(line)
       path = new PPath(projected)
-    ){
+    } {
       checkInterrupted()
-      val label = "  " + Angle.raToString(Angle.normalizeRa(ra.toRadian));
+      val label = "  " + Angle.raToString(Angle.normalizeRa(ra.toRadian))
       val text = new PPath(ChartUtils.textAlongPath(path.getPathReference,label))
       text.setPaint(chart.colors.gridLabel)
       text.setStroke(null)
@@ -211,42 +206,39 @@ object CoordinateGrid extends ChartFeature[CoordinateGridConfig]{
       chart.addNode(layer, path)
 
     }
-
-	}
-	
-	protected def paintPoles(chart:Chart, layer:Layer.Value, config:CoordinateGridConfig2, rotater:Option[Rotater],derotater:Option[Rotater]){
-		def node = {
-				val n= new PPath(new java.awt.geom.Ellipse2D.Double(-1,-1,1,1));
-				n.setStroke(new BasicStroke(1));
-				n.setStrokePaint(chart.colors.gridColor)
-				n
-		}
-		val south = transform(Vector3D.MINUS_K,derotater)
-		if(chart.isInsideCanvas(south)){
-			val pos = chart.wcs.project(south).get
-			val n = node
-			//TODO set label for south pole
-			n.setGlobalTranslation(pos);
-			chart.addNode(layer,n)
-		}
-			
-		val north = transform(Vector3D.PLUS_K,derotater)
-		if(chart.isInsideCanvas(north)){
-			val pos = chart.wcs.project(north).get
-			val n = node
-			n.setGlobalTranslation(pos);
-			//TODO set label for north pole
-			chart.addNode(layer,n)
-		}
-	}
-	
-	def clearChart(chart: Chart){
-		List(Layer.coordinateGridJ2000,Layer.coordinateGridJ1950,
-				Layer.coordinateGridEcliptic,Layer.coordinateGridGalactic).foreach{
-			chart.getLayer(_).removeAllChildren
-		}
 	}
 
+  protected def paintPoles(chart: Chart, layer: Layer.Value, config: CoordinateGridConfig2,
+                           rotater: Option[Rotater], derotater: Option[Rotater]): Unit = {
+    def node = {
+      val n = new PPath(new java.awt.geom.Ellipse2D.Double(-1, -1, 1, 1))
+      n.setStroke(new BasicStroke(1))
+      n.setStrokePaint(chart.colors.gridColor)
+      n
+    }
+    val south = transform(Vector3D.MINUS_K, derotater)
+    if (chart.isInsideCanvas(south)) {
+      val pos = chart.wcs.project(south).get
+      val n = node
+      //TODO set label for south pole
+      n.setGlobalTranslation(pos)
+      chart.addNode(layer, n)
+    }
 
+    val north = transform(Vector3D.PLUS_K, derotater)
+    if (chart.isInsideCanvas(north)) {
+      val pos = chart.wcs.project(north).get
+      val n = node
+      n.setGlobalTranslation(pos)
+      //TODO set label for north pole
+      chart.addNode(layer, n)
+    }
+  }
+
+  def clearChart(chart: Chart): Unit =
+    List(Layer.coordinateGridJ2000, Layer.coordinateGridJ1950,
+      Layer.coordinateGridEcliptic, Layer.coordinateGridGalactic).foreach {
+      chart.getLayer(_).removeAllChildren()
+    }
 }
 

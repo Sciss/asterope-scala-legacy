@@ -1,6 +1,6 @@
 **NOTE: fork from https://github.com/jankotek/asterope-scala-legacy**
 
-**NOTE: builds and runs with sbt (e.g., `sbt run`)**
+**NOTE: builds and runs with sbt. First, the database must be created (select `data.CompileDb` when running), then the GUI can be launched (select `gui.Main`).**
 
 Asterope is an astronomical application focused on advanced amateur astronomers.
 When finished it will provide skycharting, ephemeris, observation planning,

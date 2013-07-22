@@ -1,7 +1,5 @@
 package org.asterope.chart
 
-import org.asterope.util._
-
 /**
  * Provides general functionality class for Chart.
  * Implementations draw stars, objects, grids, skyview images etc
@@ -22,7 +20,7 @@ trait ChartFeature[E] {
 	 *  
 	 * @return default settings for this feature
 	 */
-	def defaultConfig:E;
+  def defaultConfig: E
 
 	/**
 	 * Update chart with this feature. 
@@ -33,18 +31,13 @@ trait ChartFeature[E] {
 	 * @param chart to paint on
 	 * @param config stores configuration for this action
 	 */
-	def updateChart(chart: Chart, config:E=defaultConfig);
-	
+	def updateChart(chart: Chart, config: E = defaultConfig): Unit
 
 	/**
 	 * Remove data from this feature from chart.   
 	 * Reverts 'updateMap' function. Usually it just clears layer. 
 	 * 
 	 * This method must wait until clear is finished.
-	 *  
-	 * @param mc MapControl to revert from  		
 	 */
-	def clearChart(chart: Chart);
-	
-	
+  def clearChart(chart: Chart): Unit
 }
