@@ -4,7 +4,7 @@ package org.asterope
 import javax.swing.{JComponent, SwingUtilities, AbstractAction, Action}
 import java.util.concurrent._
 import org.apache.commons.math.geometry.Vector3D
-import java.lang.{InterruptedException, IllegalAccessError}
+import java.lang.InterruptedException
 import language.implicitConversions
 
 /**
@@ -184,32 +184,28 @@ package object util {
   def MigLayout(args: String = "fillx") = new net.miginfocom.swing.MigLayout(args)
 
   /** implicitly converts javax.swingAction to ScalaAction */
-  implicit def action2ScalaAction(act:javax.swing.Action):ScalaAction = new ScalaAction(act)
+  implicit def action2ScalaAction(act: javax.swing.Action): ScalaAction = new ScalaAction(act)
 
-  protected class _withNameSupport[E <: JComponent](c:E){
+  implicit class HasWithName[E <: JComponent](val c: E) extends AnyVal {
     /** Changes component name and returns component itself. 
-     * Is provided by implicit conversion defined in `org.asterope.util` package
-     */
-    def withName(name:String):E = {
+      * Is provided by implicit conversion defined in `org.asterope.util` package
+      */
+    def withName(name: String): E = {
       c.setName(name)
       c
     }
   }
 
-  /** adds `withName` method to Swing components */
-  implicit def _withNameImplicit[E <: JComponent](c:E) = new _withNameSupport(c)
-
-
+  //  /** adds `withName` method to Swing components */
+  //  implicit def _withNameImplicit[E <: JComponent](c:E) = new HasWithName(c)
 
   /** factory method which takes code block and wraps it into an action*/
-  def act(title: String,body: =>Unit):Action = new AbstractAction(title) {
+  def act(title: String, body: => Unit): Action = new AbstractAction(title) {
     def actionPerformed(a: java.awt.event.ActionEvent){
       body
     }
   }
 
-  /** factory method which takes code block and wraps it into an action*/
-  def act(body: =>Unit):Action = act("undefined",body)
-
-
+  /** factory method which takes code block and wraps it into an action */
+  def act(body: => Unit): Action = act("undefined", body)
 }

@@ -9,14 +9,13 @@ abstract class Projecter extends Transformer {
 
   def inverse: Transformer
 
-  //check that inverse is supported
-  assert(
-      inverse.getOutputDimension == 3 && inverse.getInputDimension == 2,
-      "Projecter inverse wrong dimension: "+getName)
+  // check that inverse is supported
+  require(
+    inverse.getOutputDimension == 3 && inverse.getInputDimension == 2,
+    "Projecter inverse wrong dimension: " + getName)
 
   def getOutputDimension = 2
-
-  def getInputDimension = 3
+  def getInputDimension  = 3
 
   /**Some projections can tile the projection plane with repeated
    *  copies.  This method gives the vectors along which the tiles repeat.
@@ -30,7 +29,7 @@ abstract class Projecter extends Transformer {
    * @return The period in X in radians.  A value of 0 means that there is not periodicity.
    *
    */
-  def getXTiling: Double =  0
+  def getXTiling: Double = 0
 
   /**The tiling period in Y
    * @return The tiling period in radians.  A value of 0 means that
@@ -38,27 +37,22 @@ abstract class Projecter extends Transformer {
    */
   def getYTiling: Double = 0
 
-  /**Is this a valid position in the projection plane for this image. This
-   *  default is appropriate for all projections where the projection plane is infinite.
-   */
-  def validPosition(pos: Array[Double]): Boolean = {
-    return pos != null && !(java.lang.Double.isNaN(pos(0)))
-  }
+  /** Is this a valid position in the projection plane for this image. This
+    * default is appropriate for all projections where the projection plane is infinite.
+    */
+  def validPosition(pos: Array[Double]): Boolean = pos != null && !pos(0).isNaN
 
-  /**Are all points in the projection plane valid?
-   */
-  def allValid: Boolean  = false
+  /** Are all points in the projection plane valid? */
+  def allValid: Boolean = false
 
-  /**Return a shadowpoint for the input location.
-   *  Shadowpoints are not defined for all projections.
-   */
-  def shadowPoint(x: Double, y: Double): Array[Double] = {
+  /** Returns a shadowpoint for the input location.
+    * Shadow points are not defined for all projections.
+    */
+  def shadowPoint(x: Double, y: Double): Array[Double] =
     throw new UnsupportedOperationException("No shadow points in requested projection")
-  }
-
 }
 
-object Projecter{
+object Projecter {
   val projecters = Map(
     "Ait" -> ProjecterAit,
     "Arc" -> ProjecterArc,
@@ -68,8 +62,7 @@ object Projecter{
     "Stg" -> ProjecterStg,
     "Tan" -> ProjecterTan,
     "Zea" -> ProjecterZea
-
   )
-  def apply(name:String):Projecter = projecters(name)
 
+  def apply(name: String): Projecter = projecters(name)
 }

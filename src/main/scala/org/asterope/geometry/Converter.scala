@@ -2,49 +2,43 @@ package org.asterope.geometry
 
 import collection.mutable.ArrayBuffer
 
-/**A converter applies a succession of transformations on the data */
-class Converter(val transforms:List[Transformer]) extends Transformer{
+/** A converter applies a succession of transformations on the data */
+class Converter(val transforms: List[Transformer]) extends Transformer {
 
-  
-  def this(a:Array[Transformer]) = this(a.toList)
+  def this(a: Array[Transformer]) = this(a.toList)
 
-   /** optimized version of `transforms` */
-  protected val comps:Array[Transformer] = {
-    
-	val cc = ArrayBuffer[Transformer]()
-	cc ++= (transforms.filter(_!=null))
+  /** optimized version of `transforms` */
+  protected val comps: Array[Transformer] = {
+    val cc = ArrayBuffer[Transformer]()
+    cc ++= transforms.filter(_ != null)
     //start recursive optimalization
     optimizeRecur(cc)
     cc.toArray
   }
-  
+
   //check that dimensions are ok
-  comps.reduceLeft{(a1,a2)=>
-    require(a1.getOutputDimension == a2.getInputDimension,"output and input dimension does not match.")
-  	a2
-    }
+  comps.reduceLeft {(a1, a2) =>
+    require(a1.getOutputDimension == a2.getInputDimension, "output and input dimension does not match.")
+    a2
+  }
 
   /** caches output dimensions */
-  protected val compOutDimensionArr:Array[Int] = comps.map(_.getOutputDimension)
+  protected val compOutDimensionArr: Array[Int] = comps.map(_.getOutputDimension)
 
-  val getInputDimension:Int = comps(0).getInputDimension
-  
+  val getInputDimension : Int = comps.head.getInputDimension
   val getOutputDimension: Int = comps.last.getOutputDimension
-  
 
-
-  /**Transform a vector */
-  def transform(in: Array[Double], out: Array[Double]){
-
+  /** Transform a vector */
+  def transform(in: Array[Double], out: Array[Double]): Unit = {
     if (comps.length == 0) {
       if (in != out) {
         System.arraycopy(in, 0, out, 0, in.length)
       }
       return
     }
-    var from: Array[Double] = in
-    var to: Array[Double] = null
-    var oldfrom: Array[Double] = null
+    var from    : Array[Double] = in
+    var to      : Array[Double] = null
+    var oldfrom : Array[Double] = null
 
     var i: Int = 0
     while (i < comps.length) {
@@ -53,68 +47,67 @@ class Converter(val transforms:List[Transformer]) extends Transformer{
 
       //some harakiri to reuse array instances
       if (i == comps.length - 1)
-        to = out  //force usage of 'out' object on last elem
+        to = out //force usage of 'out' object on last elem
       else if (oldfrom != null && oldfrom.length == outDim)
-        to = oldfrom  //reuse previous 'from' array
+        to = oldfrom //reuse previous 'from' array
       else if (outDim == 2)
         to = new Array[Double](2)
       else
         to = new Array[Double](3)
       t.transform(from, to)
       oldfrom = from
-      from = to
+      from    = to
 
       i += 1
     }
   }
 
   def inverse = {
-    val rev = comps.reverse.map(_.inverse).toList  
-    new Converter(rev);
+    val rev = comps.reverse.map(_.inverse).toList
+    new Converter(rev)
   }
 
-  def isInverse(t:Transformer):Boolean = {
-
+  def isInverse(t: Transformer): Boolean = {
     // Two null transformations are inverses I suppose!
-    if (t == null && comps.size == 0) {
+    if (t == null && comps.length == 0) {
       return true
     }
-
 
     // A non-converter can be an inverse if it exactly
     // inverts the single operation
     if (!t.isInstanceOf[Converter]) {
-      return comps.size == 1 && comps(0).isInverse(t)
+      return comps.length == 1 && comps(0).isInverse(t)
     }
     val c = t.asInstanceOf[Converter]
 
-    if(c.comps.size != comps.size)
-      return false;
+    if (c.comps.length != comps.length)
+      return false
 
     // Check component by component
     // Note that this assumes that 'c' is performed after
     // the transformations in 'this'.
     val compsReverse = comps.reverse
-    for(i<-0 until comps.size;
-      c1 = compsReverse(i);
-      c2 = c.comps(i);
-      if(!c1.isInverse(c2))
-    ){
+    for {
+      i <- 0 until comps.length
+      c1 = compsReverse(i)
+      c2 = c.comps(i)
+      if !c1.isInverse(c2)
+    } {
       return false
     }
-    return true
+    true
   }
 
-  /** an recursive method to remove uncecessary transformers */
-  protected def optimizeRecur(cc:ArrayBuffer[Transformer]){
-	
+  /** A recursive method to remove uncecessary transformers */
+  protected def optimizeRecur(cc: ArrayBuffer[Transformer]): Unit = {
+
     // We restart the check at the beginning whenever
     // we delete anything, to handle cases like:
     // A * B * C where A*B is the inverse of C -- we
     // want to get rid of all three, and
     // C B A a b c  -> null
     // where a is A inverse, b is B inverse, c is C inverse
-    while(cc.size>0){
+    while (cc.size > 0) {
       var last = cc(0)
       var i = 1
 
@@ -155,12 +148,9 @@ class Converter(val transforms:List[Transformer]) extends Transformer{
         }
         last = curr
         i += 1
-      
+
       }
       // If we get this far we are done!
-      return;
     }
   }
-
-
 }
