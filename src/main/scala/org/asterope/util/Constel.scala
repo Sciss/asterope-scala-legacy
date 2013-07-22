@@ -3,16 +3,11 @@ package org.asterope.util
 import org.asterope.geometry.CoordinateSystem
 import org.apache.commons.math.geometry.Vector3D
 
-/**
- * Enumeration of constellations and some related utils.
- * 
- * 
- * @author Jan Kotek
- *
- */
-object
-Constel extends Enumeration{
-
+/** Enumeration of constellations and some related utils.
+  *
+  * @author Jan Kotek
+  */
+object Constel extends Enumeration {
   val 	And	= Value("And")
   val 	Ant	= Value("Ant")
   val 	Aps	= Value("Aps")
@@ -102,63 +97,58 @@ Constel extends Enumeration{
   val 	Vol	= Value("Vol")
   val 	Vul	= Value("Vul")
 
-  
-	 /**
-	  * Regular expression to match constellation abreviation:
-	  * (And|Ant|...|Vul) 	
-	  */
-	 lazy val abreviationRegExp:String = {
-		 var ret =""
-		 values.foreach(ret+=_+"|");
-     ret += ret.toLowerCase + ret.toUpperCase 
-		 ret = ret.substring(0,ret.length-1)
-		 ret
-	 }
-	 
-	 def fromLowerCase(constel:String):Option[Value] = {
-     val lowerCase = constel.toLowerCase
-		 values.foreach{c=>
-		 	if(c.toString.toLowerCase.equals(lowerCase))
-		 		return Some(c);
-		 }
-     None
-	 }
+  /**
+   * Regular expression to match constellation abreviation:
+   * (And|Ant|...|Vul)
+   */
+  lazy val abreviationRegExp: String = {
+    var ret = ""
+    values.foreach(ret += _ + "|");
+    ret += ret.toLowerCase + ret.toUpperCase
+    ret = ret.substring(0, ret.length - 1)
+    ret
+  }
 
+  def fromLowerCase(constel: String): Option[Value] = {
+    val lowerCase = constel.toLowerCase
+    values.foreach { c =>
+      if (c.toString.toLowerCase.equals(lowerCase))
+        return Some(c)
+    }
+    None
+  }
 
-
-	/**
-	 * Return the constellation name corresponding to a given position.
-	 * <P>
-	 * Roman, Nancy Grace, "Identification of a Constellation from a Position"
-	 * Pub. Astron. Soc. Pac. 99, 695, (1987).
-	 * <P>
-	 * This method comes from software by S. L. Moshier, taken from JParsec
-	 *
-	 */
-  def constelOnPosition(pos:Vector3D):Constel.Value = {
-    val pos1875:Vector3D = j1875rotater.transform(pos)
+  /** Returns the constellation name corresponding to a given position.
+    * <P>
+    * Roman, Nancy Grace, "Identification of a Constellation from a Position"
+    * Pub. Astron. Soc. Pac. 99, 695, (1987).
+    * <P>
+    * This method comes from software by S. L. Moshier, taken from JParsec
+    *
+    */
+  def constelOnPosition(pos: Vector3D): Constel.Value = {
+    val pos1875: Vector3D = j1875rotater.transform(pos)
     val ra0 = pos1875.getRa.toArcSec.toInt
     val de0 = pos1875.getDe.toArcSec.toInt
 
-		/*
+    /*
 		 * FIND CONSTELLATION SUCH THAT THE DECLINATION ENTERED IS HIGHER THAN
 		 * THE LOWER BOUNDARY OF THE CONSTELLATION WHEN THE UPPER AND LOWER
 		 * RIGHT ASCENSIONS FOR THE CONSTELLATION BOUND THE ENTERED RIGHT
 		 * ASCENSION
 		 */
-    var i = 0;
-    while(i<spatialBounds.size){
+    var i = 0
+    while (i < spatialBounds.size) {
       val raLow = spatialBounds(i)
-      val raHi = spatialBounds(i+1)
-      val de = spatialBounds(i+2)
+      val raHi  = spatialBounds(i + 1)
+      val de    = spatialBounds(i + 2)
       if (ra0 >= raLow && ra0 < raHi && de0 > de)
-        return Constel(spatialBounds(i+3))
-      i+=4
+        return Constel(spatialBounds(i + 3))
+      i += 4
     }
-    throw new Error("Constel not found for position: "+pos)
+    throw new Error("Constel not found for position: " + pos)
   }
 
-  
   /** rotater to transform vector2Rade from J2000 to B1875 */
   lazy private val j1875rotater = CoordinateSystem.factory("J1875").getRotater
   /** rotater to transform vector2Rade from J1875 to J2000 */
@@ -172,7 +162,7 @@ Constel extends Enumeration{
    * Data are from from http://cdsarc.u-strasbg.fr/viz-bin/Cat?VI/42
    *
    */
-  lazy private val spatialBounds:Array[Int] = Array(
+  lazy private val spatialBounds: Array[Int] = Array(
     0,1296000,316800,UMi.id, 432000,783000,311400,UMi.id, 1134000,1242000,310200,UMi.id, 972000,1134000,309600,UMi.id, 0,432000,306000,Cep.id, 495000,576000,295200,Cam.id, 0,270000,288000,Cep.id, 576000,783000,288000,Cam.id, 945000,972000,288000,UMi.id, 1089000,1134000,288000,Dra.id,
     0,189420,277200,Cep.id, 621000,733500,277200,Cam.id, 892800,945000,270000,UMi.id, 1089000,1116000,270000,Cep.id, 430200,495000,264600,Cam.id, 495000,612000,264600,Dra.id, 702000,892800,252000,UMi.id, 167400,184500,244800,Cas.id, 1102500,1116000,241200,Dra.id, 612000,648000,239400,Dra.id,
     0,18000,237600,Cep.id, 756000,846000,237600,UMi.id, 1273500,1296000,237600,Cep.id, 648000,729000,230400,Dra.id, 729000,778500,226800,Dra.id, 1251000,1273500,226800,Cep.id, 329400,378000,223200,Cam.id, 1080000,1102500,221400,Dra.id, 1108980,1112400,219300,Cep.id, 378000,430200,216000,Cam.id,
@@ -209,7 +199,5 @@ Constel extends Enumeration{
     639000,693000,-230400,Cru.id, 693000,784800,-230400,Cen.id, 729000,738000,-234000,Cir.id, 904500,909000,-234000,Ara.id, 117000,172800,-243000,Hor.id, 172800,247500,-243000,Ret.id, 796500,805500,-243000,Cir.id, 909000,945000,-243000,Ara.id, 945000,972000,-243000,Pav.id, 1188000,1260000,-243000,Tuc.id,
     247500,355500,-252000,Dor.id, 738000,796500,-252000,Cir.id, 796500,918000,-252000,TrA.id, 0,72000,-270000,Tuc.id, 189000,247500,-270000,Hyi.id, 355500,487800,-270000,Vol.id, 487800,607500,-270000,Car.id, 607500,738000,-270000,Mus.id, 972000,1152000,-270000,Pav.id, 1152000,1260000,-270000,Ind.id,
     1260000,1296000,-270000,Tuc.id, 40500,72000,-273600,Tuc.id, 0,189000,-297000,Hyi.id, 414000,738000,-297000,Cha.id, 738000,972000,-297000,Aps.id, 189000,414000,-306000,Men.id, 0,1296000,-324000,Oct.id
-  );
-
-
+  )
 }

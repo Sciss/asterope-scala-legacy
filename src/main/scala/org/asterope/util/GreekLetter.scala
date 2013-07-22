@@ -8,9 +8,8 @@ package org.asterope.util
 object GreekLetter extends Enumeration{
 	
 	  val Alpha, Beta, Gamma, Delta, Epsilon, Zeta, Eta, Theta, Iota, Kappa, Lambda, Mu,
-      	Nu, Xi, Omicron, Pi, Rho, Sigma, Tau, Upsilon, Phi, Chi, Psi, Omega = Value;
+      	Nu, Xi, Omicron, Pi, Rho, Sigma, Tau, Upsilon, Phi, Chi, Psi, Omega = Value
 
-	
 	  /** @return capital character for given value */ 
 	  def capitalGreekLetter(name:Value):Char = name match{	 	  
 		case  Alpha => '\u0391'
@@ -38,10 +37,10 @@ object GreekLetter extends Enumeration{
 		case  Psi => '\u03A8'
 		case  Omega => '\u03A9'
 	  }
-	   
-	  /** @return lower case character for given value */ 
-	  def smallGreekLetter(name:Value):Char = name match{	 	  
-		case  Alpha => '\u03B1'
+
+  /** @return lower case character for given value */
+  def smallGreekLetter(name: Value): Char = name match {
+    case  Alpha => '\u03B1'
 		case  Beta => '\u03B2'
 		case  Gamma => '\u03B3'
 		case  Delta => '\u03B4'
@@ -65,32 +64,33 @@ object GreekLetter extends Enumeration{
 		case  Chi => '\u03C7'
 		case  Psi => '\u03C8'
 		case  Omega => '\u03C9'
-	  }
-	   
-	val  threeLetterRegularExp:String = {
-		 var ret = ""
-		 values.map(_.toString).foreach{s=>
-		 	ret+=s+"|"
-      val short = s.substring(0,math.min(3,s.size))
-      if(short!=s)
-        ret+=short+"|"
-		 }    
-     ret+=ret.toLowerCase+ret.toUpperCase
-     values.foreach{s:Value=>
-       ret+=smallGreekLetter(s)+"|"
-     }      
-		 ret = ret.substring(0,ret.length-1)
-		 ret
-	}
-    /** try to convert greek letter name from short form to full name, or fail */
-    def completeName(shortName:String):GreekLetter.Value = {
-    	values.foreach{l:Value=>
-            if(l.toString.toLowerCase().startsWith(shortName.toLowerCase())
-            		|| l.toString.equalsIgnoreCase(shortName)
-                || smallGreekLetter(l).toString == shortName
-                || capitalGreekLetter(l).toString == shortName)
-                return l;
-        }
-        throw new IllegalArgumentException("Not found greek letter for "+shortName);
+  }
+
+  val threeLetterRegularExp: String = {
+    var ret = ""
+    values.map(_.toString).foreach { s =>
+      ret += s + "|"
+      val short = s.substring(0, math.min(3, s.size))
+      if (short != s)
+        ret += short + "|"
     }
+    ret += ret.toLowerCase + ret.toUpperCase
+    values.foreach { s =>
+      ret += smallGreekLetter(s) + "|"
+    }
+    ret = ret.substring(0, ret.length - 1)
+    ret
+  }
+
+  /** Tries to convert greek letter name from short form to full name, or fail */
+  def completeName(shortName: String): GreekLetter.Value = {
+    values.foreach { l =>
+      if (l.toString.toLowerCase.startsWith(shortName.toLowerCase)
+        || l.toString.equalsIgnoreCase(shortName)
+        || smallGreekLetter(l).toString == shortName
+        || capitalGreekLetter(l).toString == shortName)
+        return l
+    }
+    throw new IllegalArgumentException("Not found greek letter for " + shortName)
+  }
 }
