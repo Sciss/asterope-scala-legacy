@@ -7,9 +7,9 @@ class MainWindowMenu(a: MainWindowActions, mainWin: MainWindow) {
 
   mainWin.resmap.injectActionFields(a)
 
-  lazy val fileMenu = new JMenu {
-    setName("fileMenu")
-  }
+  //  lazy val fileMenu = new JMenu {
+  //    setName("fileMenu")
+  //  }
 
   lazy val navigationMenu = new JMenu() {
     setName("navigationMenu")
@@ -124,7 +124,7 @@ class MainWindowMenu(a: MainWindowActions, mainWin: MainWindow) {
     add(a.actChartSkyview)
   }
 
-  mainWin.menu.add(fileMenu       )
+  // mainWin.menu.add(fileMenu       )
   mainWin.menu.add(navigationMenu )
   mainWin.menu.add(viewMenu       )
   mainWin.menu.add(imageMenu      )

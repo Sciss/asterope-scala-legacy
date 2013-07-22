@@ -26,14 +26,14 @@ class StatusBar extends JPanel {
   /** Shows menu tooltips on status bar */
   private object toolTipMenuListener extends ChangeListener {
 
-    def getTooltip(source: Object): Option[String] =
+    def getTooltip(source: Any): Option[String] =
       source match {
+        case b: AbstractButton =>
+          Option(b.getAction).flatMap(a => Option(a.toolTip))
+
         case component: JComponent =>
           val s = component.getToolTipText
           Option(s)
-
-        case b: AbstractButton =>
-          Option(b.getAction).flatMap(a => Option(a.toolTip))
 
         case _ => None
       }

@@ -8,16 +8,16 @@ import java.awt.Component
 /**
  * Main object which starts Asterope GUI
  */
-object Main{
+object Main extends App {
   /** assert that all repaints are in GUI thread */
   RepaintManager.setCurrentManager(new RepaintManager {
-    override def addInvalidComponent(component: JComponent) {
-      assertEDT()
+    override def addInvalidComponent(component: JComponent): Unit = {
+      requireEDT()
       super.addInvalidComponent(component)
     }
 
-    override def addDirtyRegion(component: JComponent, x: Int, y: Int, w: Int, h: Int) {
-      assertEDT()
+    override def addDirtyRegion(component: JComponent, x: Int, y: Int, w: Int, h: Int): Unit = {
+      requireEDT()
       super.addDirtyRegion(component, x, y, w, h)
     }
   })
@@ -36,16 +36,16 @@ object Main{
     override def editorClosed(editor: Component, subview: JComponent) = ()
   }
 
-  def main(args: Array[String]) {
-    Log.debug("Asterope GUI is starting")
-    onEDTWait {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
-      beans.mainWinMenu //make sure menu is hooked
-      beans.mainWin.show()
-      beans.mainWin.addEditor         ("welcomeEditor", beans.welcomeEditor.panel)
-      beans.mainWin.addLeftTopView    ("objectsView"  , new JLabel())
-      beans.mainWin.addLeftBottomView ("overviewView" , overviewView)
-      beans.mainWin.addBottomBarView  ("messageView"  , messageView)
-    }
+  Log.debug("Asterope GUI is starting")
+  sys.props("apple.laf.useScreenMenuBar")                       = "true"
+  sys.props("com.apple.mrj.application.apple.menu.about.name")  = "Asterope"
+  onEDTWait {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName)
+    beans.mainWinMenu //make sure menu is hooked
+    beans.mainWin.show()
+    beans.mainWin.addEditor         ("welcomeEditor", beans.welcomeEditor.panel)
+    beans.mainWin.addLeftTopView    ("objectsView"  , new JLabel())
+    beans.mainWin.addLeftBottomView ("overviewView" , overviewView)
+    beans.mainWin.addBottomBarView  ("messageView"  , messageView)
   }
 }

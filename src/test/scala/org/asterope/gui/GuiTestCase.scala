@@ -48,7 +48,7 @@ abstract class GuiTestCase extends BeansTestCase{
   //  }
 
   def sleep(i: Int = 500): Unit = {
-    assertNotEDT()
+    requireNotEDT()
     Thread.sleep(i)
     //now need to wait until EDT queue is empty
     //easiest way is to send an event, and wait until itis executed
