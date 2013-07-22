@@ -66,9 +66,9 @@ package object util {
       throw new InterruptedException("Thread interrupted")
   }
 
-/*
- * Asterope implicit conversions for angle. To enable `1.degree` etc
- */
+  /*
+   * Asterope implicit conversions for angle. To enable `1.degree` etc
+   */
   implicit def int2angle   (d: Int   )  = Angle.int2angle   (d)
   implicit def long2angle  (d: Long  )  = Angle.long2angle  (d)
   implicit def double2angle(d: Double)  = Angle.double2angle(d)

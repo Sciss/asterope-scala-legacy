@@ -69,9 +69,7 @@ case class Angle(uas: Long) extends Ordered[Angle] {
   def until(maxVal: Angle, increment: Angle): Seq[Angle] = (uas until (maxVal.uas, increment.uas)).map(Angle(_))
 }
 
-
 object Angle {
-
   protected[util] val CIRCLE: Long = 360l * 60l * 60l * 1000l * 1000l
 
   /** used in implicit conversion to support `1.degree`, `1.arcMinute` etc */
